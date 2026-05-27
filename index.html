@@ -1,0 +1,567 @@
+1|```html
+     2|<!DOCTYPE html>
+     3|<html lang="en" class="scroll-smooth">
+     4|<head>
+     5|    <meta charset="UTF-8">
+     6|    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     7|    <title>Kaf Center API Gateway | Unified AI Infrastructure</title>
+     8|    <script src="https://cdn.tailwindcss.com"></script>
+     9|    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    10|    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    11|    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    12|    <script>
+    13|        tailwind.config = {
+    14|            theme: {
+    15|                extend: {
+    16|                    fontFamily: {
+    17|                        sans: ['Inter', 'sans-serif'],
+    18|                    },
+    19|                    colors: {
+    20|                        kaf: {
+    21|                            dark: '#0a0a0f',
+    22|                            card: '#111118',
+    23|                            purple: '#8b5cf6',
+    24|                            teal: '#14b8a6',
+    25|                            accent: '#6366f1',
+    26|                        }
+    27|                    },
+    28|                    animation: {
+    29|                        'float': 'float 6s ease-in-out infinite',
+    30|                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+    31|                        'glow': 'glow 2s ease-in-out infinite alternate',
+    32|                    },
+    33|                    keyframes: {
+    34|                        float: {
+    35|                            '0%, 100%': { transform: 'translateY(0px)' },
+    36|                            '50%': { transform: 'translateY(-20px)' },
+    37|                        },
+    38|                        glow: {
+    39|                            '0%': { boxShadow: '0 0 5px rgba(139, 92, 246, 0.5)' },
+    40|                            '100%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.8), 0 0 40px rgba(20, 184, 166, 0.4)' },
+    41|                        }
+    42|                    }
+    43|                }
+    44|            }
+    45|        }
+    46|    </script>
+    47|    <style>
+    48|        body {
+    49|            background-color: #0a0a0f;
+    50|            color: #e2e8f0;
+    51|            overflow-x: hidden;
+    52|        }
+    53|        
+    54|        #canvas-container {
+    55|            position: fixed;
+    56|            top: 0;
+    57|            left: 0;
+    58|            width: 100%;
+    59|            height: 100%;
+    60|            z-index: 0;
+    61|            pointer-events: none;
+    62|        }
+    63|        
+    64|        .glass {
+    65|            background: rgba(17, 17, 24, 0.7);
+    66|            backdrop-filter: blur(20px);
+    67|            -webkit-backdrop-filter: blur(20px);
+    68|            border: 1px solid rgba(139, 92, 246, 0.1);
+    69|        }
+    70|        
+    71|        .glass-hover:hover {
+    72|            border-color: rgba(139, 92, 246, 0.3);
+    73|            box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
+    74|        }
+    75|        
+    76|        .gradient-text {
+    77|            background: linear-gradient(135deg, #8b5cf6 0%, #14b8a6 100%);
+    78|            -webkit-background-clip: text;
+    79|            -webkit-text-fill-color: transparent;
+    80|            background-clip: text;
+    81|        }
+    82|        
+    83|        .gradient-border {
+    84|            position: relative;
+    85|        }
+    86|        
+    87|        .gradient-border::before {
+    88|            content: '';
+    89|            position: absolute;
+    90|            inset: 0;
+    91|            border-radius: inherit;
+    92|            padding: 1px;
+    93|            background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(20, 184, 166, 0.5));
+    94|            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    95|            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    96|            -webkit-mask-composite: xor;
+    97|            mask-composite: exclude;
+    98|            pointer-events: none;
+    99|        }
+   100|        
+   101|        .feature-icon {
+   102|            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(20, 184, 166, 0.2));
+   103|        }
+   104|        
+   105|        .pricing-card {
+   106|            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+   107|        }
+   108|        
+   109|        .pricing-card:hover {
+   110|            transform: translateY(-8px) scale(1.02);
+   111|        }
+   112|        
+   113|        .pricing-card.featured {
+   114|            border-color: rgba(139, 92, 246, 0.5);
+   115|            box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+   116|        }
+   117|        
+   118|        .model-badge {
+   119|            transition: all 0.3s ease;
+   120|        }
+   121|        
+   122|        .model-badge:hover {
+   123|            transform: translateY(-4px);
+   124|            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+   125|        }
+   126|        
+   127|        .nav-glass {
+   128|            background: rgba(10, 10, 15, 0.8);
+   129|            backdrop-filter: blur(20px);
+   130|            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+   131|        }
+   132|        
+   133|        .btn-primary {
+   134|            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+   135|            transition: all 0.3s ease;
+   136|        }
+   137|        
+   138|        .btn-primary:hover {
+   139|            box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+   140|            transform: translateY(-2px);
+   141|        }
+   142|        
+   143|        .btn-secondary {
+   144|            border: 1px solid rgba(139, 92, 246, 0.3);
+   145|            transition: all 0.3s ease;
+   146|        }
+   147|        
+   148|        .btn-secondary:hover {
+   149|            border-color: rgba(139, 92, 246, 0.6);
+   150|            background: rgba(139, 92, 246, 0.1);
+   151|        }
+   152|        
+   153|        .scroll-reveal {
+   154|            opacity: 0;
+   155|            transform: translateY(30px);
+   156|            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+   157|        }
+   158|        
+   159|        .scroll-reveal.visible {
+   160|            opacity: 1;
+   161|            transform: translateY(0);
+   162|        }
+   163|        
+   164|        .code-block {
+   165|            font-family: 'Courier New', monospace;
+   166|            background: rgba(0, 0, 0, 0.5);
+   167|            border: 1px solid rgba(139, 92, 246, 0.2);
+   168|        }
+   169|        
+   170|        .stat-number {
+   171|            font-variant-numeric: tabular-nums;
+   172|        }
+   173|        
+   174|        ::-webkit-scrollbar {
+   175|            width: 8px;
+   176|        }
+   177|        
+   178|        ::-webkit-scrollbar-track {
+   179|            background: #0a0a0f;
+   180|        }
+   181|        
+   182|        ::-webkit-scrollbar-thumb {
+   183|            background: linear-gradient(180deg, #8b5cf6, #14b8a6);
+   184|            border-radius: 4px;
+   185|        }
+   186|    </style>
+   187|</head>
+   188|<body class="antialiased">
+   189|    <div id="canvas-container"></div>
+   190|    
+   191|    <!-- Navigation -->
+   192|    <nav class="fixed top-0 left-0 right-0 z-50 nav-glass">
+   193|        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   194|            <div class="flex items-center justify-between h-16">
+   195|                <div class="flex items-center gap-3">
+   196|                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-kaf-purple to-kaf-teal flex items-center justify-center">
+   197|                        <i class="fas fa-network-wired text-white text-sm"></i>
+   198|                    </div>
+   199|                    <span class="font-bold text-lg tracking-tight">Kaf Center</span>
+   200|                </div>
+   201|                <div class="hidden md:flex items-center gap-8">
+   202|                    <a href="#features" class="text-sm text-gray-400 hover:text-white transition-colors">Features</a>
+   203|                    <a href="#models" class="text-sm text-gray-400 hover:text-white transition-colors">Models</a>
+   204|                    <a href="#pricing" class="text-sm text-gray-400 hover:text-white transition-colors">Pricing</a>
+   205|                    <a href="#docs" class="text-sm text-gray-400 hover:text-white transition-colors">Docs</a>
+   206|                </div>
+   207|                <div class="flex items-center gap-4">
+   208|                    <button class="hidden sm:block text-sm text-gray-400 hover:text-white transition-colors">Sign In</button>
+   209|                    <button class="btn-primary px-5 py-2 rounded-lg text-sm font-medium text-white">
+   210|                        Get Started
+   211|                    </button>
+   212|                </div>
+   213|            </div>
+   214|        </div>
+   215|    </nav>
+   216|
+   217|    <!-- Hero Section -->
+   218|    <section class="relative z-10 min-h-screen flex items-center justify-center pt-16">
+   219|        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+   220|            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8 animate-pulse-slow">
+   221|                <span class="w-2 h-2 rounded-full bg-kaf-teal animate-pulse"></span>
+   222|                <span class="text-xs font-medium text-gray-300">Now serving 2.4B+ requests/month</span>
+   223|            </div>
+   224|            
+   225|            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
+   226|                One Gateway.<br>
+   227|                <span class="gradient-text">Every AI Model.</span>
+   228|            </h1>
+   229|            
+   230|            <p class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+   231|                Kaf Center API Gateway unifies access to the world's leading AI models. 
+   232|                Route, monitor, and optimize your AI infrastructure with a single endpoint.
+   233|            </p>
+   234|            
+   235|            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+   236|                <button class="btn-primary px-8 py-4 rounded-xl text-base font-semibold text-white flex items-center gap-2">
+   237|                    <span>Start Free Trial</span>
+   238|                    <i class="fas fa-arrow-right text-sm"></i>
+   239|                </button>
+   240|                <button class="btn-secondary px-8 py-4 rounded-xl text-base font-semibold text-white flex items-center gap-2">
+   241|                    <i class="fas fa-book text-sm"></i>
+   242|                    <span>View Documentation</span>
+   243|                </button>
+   244|            </div>
+   245|            
+   246|            <!-- Stats -->
+   247|            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+   248|                <div class="glass rounded-2xl p-4">
+   249|                    <div class="text-2xl font-bold gradient-text stat-number">99.99%</div>
+   250|                    <div class="text-xs text-gray-500 mt-1">Uptime SLA</div>
+   251|                </div>
+   252|                <div class="glass rounded-2xl p-4">
+   253|                    <div class="text-2xl font-bold gradient-text stat-number">&lt;50ms</div>
+   254|                    <div class="text-xs text-gray-500 mt-1">Avg Latency</div>
+   255|                </div>
+   256|                <div class="glass rounded-2xl p-4">
+   257|                    <div class="text-2xl font-bold gradient-text stat-number">50+</div>
+   258|                    <div class="text-xs text-gray-500 mt-1">AI Models</div>
+   259|                </div>
+   260|                <div class="glass rounded-2xl p-4">
+   261|                    <div class="text-2xl font-bold gradient-text stat-number">10K+</div>
+   262|                    <div class="text-xs text-gray-500 mt-1">Developers</div>
+   263|                </div>
+   264|            </div>
+   265|        </div>
+   266|        
+   267|        <!-- Scroll indicator -->
+   268|        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+   269|            <i class="fas fa-chevron-down text-gray-500 text-lg"></i>
+   270|        </div>
+   271|    </section>
+   272|
+   273|    <!-- Model Badges Section -->
+   274|    <section id="models" class="relative z-10 py-20">
+   275|        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   276|            <div class="text-center mb-12 scroll-reveal">
+   277|                <h2 class="text-3xl sm:text-4xl font-bold mb-4">Supported AI Models</h2>
+   278|                <p class="text-gray-400 max-w-xl mx-auto">Access the world's most powerful AI models through a single, unified API.</p>
+   279|            </div>
+   280|            
+   281|            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+   282|                <div class="model-badge glass rounded-xl p-4 text-center cursor-pointer scroll-reveal">
+   283|                    <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+   284|                        <i class="fas fa-brain text-white text-sm"></i>
+   285|                    </div>
+   286|                    <div class="text-sm font-semibold">Kaf Center</div>
+   287|                    <div class="text-xs text-gray-500 mt-1">Proprietary</div>
+   288|                </div>
+   289|                
+   290|                <div class="model-badge glass rounded-xl p-4 text-center cursor-pointer scroll-reveal">
+   291|                    <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+   292|                        <i class="fas fa-fire text-white text-sm"></i>
+   293|                    </div>
+   294|                    <div class="text-sm font-semibold">Hermes Agent</div>
+   295|                    <div class="text-xs text-gray-500 mt-1">Reasoning</div>
+   296|                </div>
+   297|                
+   298|                <div class="model-badge glass rounded-xl p-4 text-center cursor-pointer scroll-reveal">
+   299|                    <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+   300|                        <i class="fas fa-search text-white text-sm"></i>
+   301|                    </div>
+   302|                    <div class="text-sm font-semibold">DeepSeek</div>
+   303|                    <div class="text-xs text-gray-500 mt-1">Code & Chat</div>
+   304|                </div>
+   305|                
+   306|                <div class="model-badge glass rounded-xl p-4 text-center cursor-pointer scroll-reveal">
+   307|                    <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+   308|                        <i class="fas fa-moon text-white text-sm"></i>
+   309|                    </div>
+   310|                    <div class="text-sm font-semibold">Kimi-k2.6</div>
+   311|                    <div class="text-xs text-gray-500 mt-1">Long Context</div>
+   312|                </div>
+   313|                
+   314|                <div class="model-badge glass rounded-xl p-4 text-center cursor-pointer scroll-reveal">
+   315|                    <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
+   316|                        <i class="fas fa-cube text-white text-sm"></i>
+   317|                    </div>
+   318|                    <div class="text-sm font-semibold">GLM-5.1</div>
+   319|                    <div class="text-xs text-gray-500 mt-1">Multilingual</div>
+   320|                </div>
+   321|                
+   322|                <div class="model-badge glass rounded-xl p-4 text-center cursor-pointer scroll-reveal">
+   323|                    <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-gradient-to-br from-gray-500 to-slate-600 flex items-center justify-center">
+   324|                        <i class="fas fa-cloud text-white text-sm"></i>
+   325|                    </div>
+   326|                    <div class="text-sm font-semibold">Ollama Cloud</div>
+   327|                    <div class="text-xs text-gray-500 mt-1">Open Source</div>
+   328|                </div>
+   329|            </div>
+   330|        </div>
+   331|    </section>
+   332|
+   333|    <!-- Features Section -->
+   334|    <section id="features" class="relative z-10 py-20">
+   335|        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   336|            <div class="text-center mb-16 scroll-reveal">
+   337|                <h2 class="text-3xl sm:text-4xl font-bold mb-4">Enterprise-Grade Features</h2>
+   338|                <p class="text-gray-400 max-w-xl mx-auto">Built for scale. Designed for developers who demand reliability and performance.</p>
+   339|            </div>
+   340|            
+   341|            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+   342|                <!-- Rate Limiting -->
+   343|                <div class="glass glass-hover rounded-2xl p-6 scroll-reveal group">
+   344|                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+   345|                        <i class="fas fa-tachometer-alt text-kaf-purple text-lg"></i>
+   346|                    </div>
+   347|                    <h3 class="text-lg font-semibold mb-2">Smart Rate Limiting</h3>
+   348|                    <p class="text-sm text-gray-400 leading-relaxed">Token bucket and leaky bucket algorithms with burst protection. Prevent abuse while maintaining throughput.</p>
+   349|                    <div class="mt-4 flex items-center gap-2 text-xs text-kaf-teal">
+   350|                        <i class="fas fa-check-circle"></i>
+   351|                        <span>Per-key & per-IP limits</span>
+   352|                    </div>
+   353|                </div>
+   354|                
+   355|                <!-- Authentication -->
+   356|                <div class="glass glass-hover rounded-2xl p-6 scroll-reveal group">
+   357|                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+   358|                        <i class="fas fa-shield-alt text-kaf-teal text-lg"></i>
+   359|                    </div>
+   360|                    <h3 class="text-lg font-semibold mb-2">Advanced Auth</h3>
+   361|                    <p class="text-sm text-gray-400 leading-relaxed">API keys, JWT tokens, OAuth 2.0, and mTLS. Fine-grained RBAC for team access control.</p>
+   362|                    <div class="mt-4 flex items-center gap-2 text-xs text-kaf-teal">
+   363|                        <i class="fas fa-check-circle"></i>
+   364|                        <span>SAML & OIDC ready</span>
+   365|                    </div>
+   366|                </div>
+   367|                
+   368|                <!-- Load Balancing -->
+   369|                <div class="glass glass-hover rounded-2xl p-6 scroll-reveal group">
+   370|                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+   371|                        <i class="fas fa-balance-scale text-kaf-purple text-lg"></i>
+   372|                    </div>
+   373|                    <h3 class="text-lg font-semibold mb-2">Intelligent Load Balancing</h3>
+   374|                    <p class="text-sm text-gray-400 leading-relaxed">Round-robin, least-connections, and latency-based routing. Automatic failover across regions.</p>
+   375|                    <div class="mt-4 flex items-center gap-2 text-xs text-kaf-teal">
+   376|                        <i class="fas fa-check-circle"></i>
+   377|                        <span>Multi-region failover</span>
+   378|                    </div>
+   379|                </div>
+   380|                
+   381|                <!-- Monitoring -->
+   382|                <div class="glass glass-hover rounded-2xl p-6 scroll-reveal group">
+   383|                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+   384|                        <i class="fas fa-chart-line text-kaf-teal text-lg"></i>
+   385|                    </div>
+   386|                    <h3 class="text-lg font-semibold mb-2">Real-Time Monitoring</h3>
+   387|                    <p class="text-sm text-gray-400
+1|      <!-- Feature: Caching -->
+     2|      <div class="flex flex-col items-center text-center p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-lg hover:border-cyan-500/50 transition-all duration-300">
+     3|        <div class="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 mb-5">
+     4|          <i class="fas fa-database text-xl text-white"></i>
+     5|        </div>
+     6|        <h3 class="text-xl font-bold text-white mb-3">Smart Caching</h3>
+     7|        <p class="text-gray-400 text-sm leading-relaxed">Accelerate response times and reduce backend load with intelligent, multi-layered caching strategies.</p>
+     8|      </div>
+     9|
+    10|      <!-- Feature: Transformations -->
+    11|      <div class="flex flex-col items-center text-center p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-lg hover:border-cyan-500/50 transition-all duration-300">
+    12|        <div class="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 mb-5">
+    13|          <i class="fas fa-code text-xl text-white"></i>
+    14|        </div>
+    15|        <h3 class="text-xl font-bold text-white mb-3">Transformations</h3>
+    16|        <p class="text-gray-400 text-sm leading-relaxed">Modify requests and responses on the fly with powerful, low-latency code transformations.</p>
+    17|      </div>
+    18|    </div>
+    19|  </div>
+    20|</section>
+    21|
+    22|<!-- PRICING SECTION -->
+    23|<section class="relative py-24 px-4 sm:px-6 lg:px-8" id="pricing">
+    24|  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-950/10 to-transparent"></div>
+    25|  <div class="relative max-w-7xl mx-auto">
+    26|    <div class="text-center mb-16">
+    27|      <span class="inline-block px-4 py-1.5 mb-4 text-xs font-semibold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">Pricing</span>
+    28|      <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight">Simple, Transparent Pricing</h2>
+    29|      <p class="mt-4 text-lg text-gray-400 max-w-2xl mx-auto">Scale effortlessly. Choose the plan that fits your current needs and upgrade as you grow.</p>
+    30|    </div>
+    31|
+    32|    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+    33|      
+    34|      <!-- Starter Tier -->
+    35|      <div class="relative p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex flex-col hover:border-white/20 transition-all duration-300">
+    36|        <h3 class="text-lg font-bold text-white mb-2">Starter</h3>
+    37|        <p class="text-gray-400 text-sm mb-8">Perfect for side projects and MVPs.</p>
+    38|        <div class="mb-8">
+    39|          <span class="text-5xl font-extrabold text-white">$29</span>
+    40|          <span class="text-gray-400 text-sm">/mo</span>
+    41|        </div>
+    42|        <ul class="space-y-4 mb-10 flex-grow">
+    43|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    44|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    45|            <span>100K Requests / month</span>
+    46|          </li>
+    47|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    48|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    49|            <span>3 APIs</span>
+    50|          </li>
+    51|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    52|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    53|            <span>Basic Analytics</span>
+    54|          </li>
+    55|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    56|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    57|            <span>Email Support</span>
+    58|          </li>
+    59|        </ul>
+    60|        <button class="w-full py-3 px-6 rounded-xl bg-white/10 border border-white/10 text-white font-semibold text-sm hover:bg-white/20 transition-colors duration-200">Get Started</button>
+    61|      </div>
+    62|
+    63|      <!-- Pro Tier -->
+    64|      <div class="relative p-8 rounded-2xl bg-white/5 border-2 border-cyan-500/60 backdrop-blur-xl flex flex-col shadow-[0_0_40px_rgba(6,182,212,0.15)] hover:border-cyan-400 transition-all duration-300">
+    65|        <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full text-xs font-bold text-white uppercase tracking-wider">Most Popular</div>
+    66|        <h3 class="text-lg font-bold text-white mb-2">Pro</h3>
+    67|        <p class="text-gray-400 text-sm mb-8">For scaling teams and heavy workloads.</p>
+    68|        <div class="mb-8">
+    69|          <span class="text-5xl font-extrabold text-white">$99</span>
+    70|          <span class="text-gray-400 text-sm">/mo</span>
+    71|        </div>
+    72|        <ul class="space-y-4 mb-10 flex-grow">
+    73|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    74|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    75|            <span>1M Requests / month</span>
+    76|          </li>
+    77|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    78|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    79|            <span>10 APIs</span>
+    80|          </li>
+    81|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    82|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    83|            <span>Advanced Analytics</span>
+    84|          </li>
+    85|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    86|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    87|            <span>Priority Support</span>
+    88|          </li>
+    89|          <li class="flex items-start gap-3 text-sm text-gray-300">
+    90|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+    91|            <span>Custom Rules</span>
+    92|          </li>
+    93|        </ul>
+    94|        <button class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold text-sm hover:from-cyan-400 hover:to-blue-400 transition-all duration-200 shadow-lg shadow-cyan-500/25">Get Started</button>
+    95|      </div>
+    96|
+    97|      <!-- Enterprise Tier -->
+    98|      <div class="relative p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex flex-col hover:border-white/20 transition-all duration-300">
+    99|        <h3 class="text-lg font-bold text-white mb-2">Enterprise</h3>
+   100|        <p class="text-gray-400 text-sm mb-8">Dedicated resources for mission-critical apps.</p>
+   101|        <div class="mb-8">
+   102|          <span class="text-5xl font-extrabold text-white">$299</span>
+   103|          <span class="text-gray-400 text-sm">/mo</span>
+   104|        </div>
+   105|        <ul class="space-y-4 mb-10 flex-grow">
+   106|          <li class="flex items-start gap-3 text-sm text-gray-300">
+   107|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+   108|            <span>Unlimited Requests</span>
+   109|          </li>
+   110|          <li class="flex items-start gap-3 text-sm text-gray-300">
+   111|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+   112|            <span>Custom SLA</span>
+   113|          </li>
+   114|          <li class="flex items-start gap-3 text-sm text-gray-300">
+   115|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+   116|            <span>Dedicated Support</span>
+   117|          </li>
+   118|          <li class="flex items-start gap-3 text-sm text-gray-300">
+   119|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+   120|            <span>SSO Integration</span>
+   121|          </li>
+   122|          <li class="flex items-start gap-3 text-sm text-gray-300">
+   123|            <i class="fas fa-check mt-0.5 text-cyan-400"></i>
+   124|            <span>Audit Logs</span>
+   125|          </li>
+   126|        </ul>
+   127|        <button class="w-full py-3 px-6 rounded-xl bg-white/10 border border-white/10 text-white font-semibold text-sm hover:bg-white/20 transition-colors duration-200">Contact Sales</button>
+   128|      </div>
+   129|
+   130|    </div>
+   131|  </div>
+   132|</section>
+   133|
+   134|<!-- MODEL BADGES SECTION -->
+   135|<section class="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden" id="models">
+   136|  <div class="relative max-w-7xl mx-auto">
+   137|    <div class="text-center mb-16">
+   138|      <span class="inline-block px-4 py-1.5 mb-4 text-xs font-semibold uppercase tracking-widest text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">Integrations</span>
+   139|      <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight">Supported Models</h2>
+   140|      <p class="mt-4 text-lg text-gray-400 max-w-2xl mx-auto">Seamlessly route and manage requests across the industry's leading AI models and providers.</p>
+   141|    </div>
+   142|
+   143|    <div class="flex flex-wrap justify-center gap-4 md:gap-6">
+   144|      <div class="px-6 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/20 hover:scale-105 transition-transform duration-300 cursor-pointer">Kaf Center</div>
+   145|      <div class="px-6 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg shadow-violet-500/20 hover:scale-105 transition-transform duration-300 cursor-pointer">Hermes Agent</div>
+   146|      <div class="px-6 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/20 hover:scale-105 transition-transform duration-300 cursor-pointer">DeepSeek</div>
+   147|      <div class="px-6 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-rose-500 to-pink-600 shadow-lg shadow-rose-500/20 hover:scale-105 transition-transform duration-300 cursor-pointer">Kimi-k2.6</div>
+   148|      <div class="px-6 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg shadow-amber-500/20 hover:scale-105 transition-transform duration-300 cursor-pointer">GLM-5.1</div>
+   149|      <div class="px-6 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-slate-500 to-gray-600 shadow-lg shadow-slate-500/20 hover:scale-105 transition-transform duration-300 cursor-pointer">Ollama Cloud</div>
+   150|    </div>
+   151|  </div>
+   152|</section>
+   153|
+   154|<!-- CTA SECTION -->
+   155|<section class="relative py-24 px-4 sm:px-6 lg:px-8" id="cta">
+   156|  <div class="absolute inset-0 bg-gradient-to-r from-cyan-900/30 via-blue-900/30 to-violet-900/30"></div>
+   157|  <div class="absolute inset-0 backdrop-blur-3xl"></div>
+   158|  <div class="relative max-w-4xl mx-auto text-center">
+   159|    <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Ready to Supercharge Your APIs?</h2>
+   160|    <p class="text-lg text-gray-300 mb-10 max-w-2xl mx-auto">Join thousands of developers who are shipping faster, more resilient, and secure APIs with Kaf Center.</p>
+   161|    <button class="px-10 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-lg hover:from-cyan-400 hover:to-blue-400 transition-all duration-200 shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-400/40 hover:-translate-y-0.5">Start Free Trial</button>
+   162|    <p class="mt-4 text-xs text-gray-500">No credit card required. 14-day free trial.</p>
+   163|  </div>
+   164|</section>
+   165|
+<!-- FOOTER -->
+<footer class="relative border-t border-white/10 bg-black/40 py-12 px-6">
+  <div class="max-w-7xl mx-auto text-center">
+    <div class="flex flex-wrap justify-center gap-8 mb-6">
+      <a href="#" class="text-gray-400 hover:text-white transition-colors">Documentation</a>
+      <a href="#" class="text-gray-400 hover:text-white transition-colors">API Reference</a>
+      <a href="#" class="text-gray-400 hover:text-white transition-colors">Status</a>
+      <a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy</a>
+      <a href="#" class="text-gray-400 hover:text-white transition-colors">Terms</a>
+    </div>
+    <p class="text-gray-500 text-sm">© 2026 Kaf Center. Powered by Hermes Agent + Kimi-k2.6 + GLM-5.1 + Ollama Cloud</p>
+  </div>
+</footer>
+</body>
+</html>
